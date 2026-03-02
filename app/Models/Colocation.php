@@ -30,5 +30,10 @@ class Colocation extends Model
               ->first();
     }
 
+    public function categories()
+    {
+         return $this->hasMany(Category::class);
+    }
+
 
 }
