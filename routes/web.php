@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ColocationController;
 use App\Http\Controllers\InvitationController;
+use App\Http\Controllers\CategoryController;
 
 
 /*
@@ -60,6 +61,15 @@ Route::middleware(['auth', 'check.banned'])->group(function () {
     // refuse
     Route::post('/invitations/{token}/refuse', [InvitationController::class, 'refuse'])
         ->name('invitations.refuse');
+
+    Route::get('/colocations/{colocation}/categories', [CategoryController::class, 'index'])
+        ->name('categories.index');
+
+    Route::post('/colocations/{colocation}/categories', [CategoryController::class, 'store'])
+        ->name('categories.store');
+
+    Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])
+        ->name('categories.destroy');
 
 
 
