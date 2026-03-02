@@ -43,6 +43,11 @@ class User extends Authenticatable
         return $this->activeColocation() !== null ;
     }
 
+    public function expensesPaid()
+    {
+       return $this->hasMany(Expense::class, 'payer_id');
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *
