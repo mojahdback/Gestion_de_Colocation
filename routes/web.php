@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ColocationController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ExpenseController;
 
 
 /*
@@ -70,6 +71,18 @@ Route::middleware(['auth', 'check.banned'])->group(function () {
 
     Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])
         ->name('categories.destroy');
+
+     Route::get('/colocations/{colocation}/expenses', [ExpenseController::class, 'index'])
+        ->name('expenses.index');
+
+    Route::get('/colocations/{colocation}/expenses/create', [ExpenseController::class, 'create'])
+        ->name('expenses.create');
+
+    Route::post('/colocations/{colocation}/expenses', [ExpenseController::class, 'store'])
+        ->name('expenses.store');
+
+    Route::delete('/expenses/{expense}', [ExpenseController::class, 'destroy'])
+        ->name('expenses.destroy');
 
 
 
