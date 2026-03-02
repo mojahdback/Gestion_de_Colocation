@@ -25,6 +25,24 @@ class User extends Authenticatable
         
     ];
 
+    public function colocation()
+    {
+        return $this->belongsToMany(Colocation::class, 'memberships')
+                    ->withPivot('role', 'joined_at', 'left_at')
+                    ->withTimestamps();
+    }
+
+    public function activeColocation(){
+        return $this->colocation()
+                ->wherePivotNull('left_at')
+                ->where('status', 'active')
+                ->first();
+    }
+
+    public function hasActiveColocation(){
+        return $this->activeColocation() !== null ;
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *
