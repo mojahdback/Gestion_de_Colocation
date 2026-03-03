@@ -59,13 +59,26 @@ class ColocationController extends Controller
     }
 
    
-    public function show(Colocation $colocation)
+    public function show(Colocation $colocation,Request $request)
     {
         $colocation->load(['members', 'expenses', 'categories']);
 
         $members = $colocation->members;
         $expenses = $colocation->expenses;
         $categories = $colocation->categories; 
+
+         $month = $request->query('month');
+
+       if ($month) {
+        $expenses = $expenses->where('date', 'like', $month . '%');
+       }
+
+    // Lister tous les mois présents dans les dépenses de cette colocation
+        $months = $colocation->expenses()
+        ->selectRaw("DATE_FORMAT(date, '%Y-%m') as month")
+        ->distinct()
+        ->orderBy('month', 'desc')
+        ->pluck('month');
 
        
 
@@ -154,7 +167,10 @@ class ColocationController extends Controller
             'expenses',
             'categories',
             'balances',
-            'settlements'
+            'settlements',
+            'months',
+            'month'
+            
         ));
     }
 
