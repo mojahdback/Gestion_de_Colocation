@@ -47,7 +47,7 @@
                             <div>
                                 <p class="text-sm font-medium text-gray-800">
                                     {{ $member->name }}
-                                    @if($member->id === $colocation->owner_id)
+                                    @if($member->id === $colocation-> role)
                                         <span class="text-xs text-indigo-500">(owner)</span>
                                     @endif
                                     @if($member->id === auth()->id())
@@ -63,7 +63,7 @@
                             <p class="text-sm font-semibold {{ $balance >= 0 ? 'text-green-600' : 'text-red-600' }}">
                                 {{ $balance >= 0 ? '+' : '' }}{{ number_format($balance, 2) }} €
                             </p>
-                            @if(auth()->id() === $colocation->owner_id && $member->id !== $colocation->owner_id)
+                            @if(auth()->id() === $colocation->role && $member->id !== $colocation->owner)
                                 <form method="POST" action="{{ route('colocations.members.remove', [$colocation, $member]) }}"
                                       onsubmit="return confirm('Retirer {{ $member->name }} ?')">
                                     @csrf @method('DELETE')
