@@ -18,6 +18,12 @@ class Colocation extends Model
                     ->withTimestamps();  
     }
 
+
+    public function members()
+    {
+            return $this->users()->wherePivotNull('left_at');
+    }
+
     public function activeMembers(){
         return $this->users()->wherePivotNull('left_at');
     }
