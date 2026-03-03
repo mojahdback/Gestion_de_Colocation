@@ -7,7 +7,7 @@ use App\Http\Controllers\ColocationController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ExpenseController;
-
+use App\Http\Controllers\AdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,9 +30,7 @@ Route::middleware(['auth', 'check.banned'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
-    Route::get('/admin/dashboard' , function(){
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
+  
 
       // Dashboard / Home
     Route::get('/dashboard', [ColocationController::class, 'index'])->name('dashboard');
@@ -83,6 +81,24 @@ Route::middleware(['auth', 'check.banned'])->group(function () {
 
     Route::delete('/expenses/{expense}', [ExpenseController::class, 'destroy'])
         ->name('expenses.destroy');
+
+        Route::resource('colocations', ColocationController::class);
+
+    Route::post('/colocations/{colocation}/leave', [ColocationController::class, 'leave'])
+        ->name('colocations.leave');
+
+    Route::delete('/colocations/{colocation}/members/{user}', [ColocationController::class, 'removeMember'])
+        ->name('colocations.removeMember');
+
+    Route::post('/colocations/{colocation}/cancel', [ColocationController::class, 'cancel'])
+        ->name('colocations.cancel');
+
+     // ─── Admin ───────────────────────────────────────────────────────────────
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
+        Route::post('users/{user}/ban', [AdminController::class, 'ban'])->name('users.ban');
+        Route::post('users/{user}/unban', [AdminController::class, 'unban'])->name('users.unban');
+    });
 
 
 
