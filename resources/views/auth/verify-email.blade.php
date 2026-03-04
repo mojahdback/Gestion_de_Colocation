@@ -1,31 +1,20 @@
 <x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn\'t receive the email, we will gladly send you another.') }}
-    </div>
-
-    @if (session('status') == 'verification-link-sent')
-        <div class="mb-4 font-medium text-sm text-green-600">
-            {{ __('A new verification link has been sent to the email address you provided during registration.') }}
-        </div>
+<div style="text-align:center;">
+    <div style="font-size:56px;margin-bottom:20px;">📬</div>
+    <h1 style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:#1C1C1C;margin-bottom:10px;">Vérifiez votre email</h1>
+    <p style="font-size:14px;color:#6B6560;margin-bottom:24px;line-height:1.6;">Nous avons envoyé un lien de vérification à votre adresse email. Cliquez dessus pour activer votre compte.</p>
+    @if(session('status') == 'verification-link-sent')
+        <div class="status-msg" style="margin-bottom:20px;">Un nouveau lien a été envoyé !</div>
     @endif
-
-    <div class="mt-4 flex items-center justify-between">
+    <div style="display:flex;flex-direction:column;gap:10px;">
         <form method="POST" action="{{ route('verification.send') }}">
             @csrf
-
-            <div>
-                <x-primary-button>
-                    {{ __('Resend Verification Email') }}
-                </x-primary-button>
-            </div>
+            <button type="submit" class="btn-primary">Renvoyer l'email</button>
         </form>
-
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-
-            <button type="submit" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                {{ __('Log Out') }}
-            </button>
+            <button type="submit" style="background:none;border:none;font-family:'DM Sans',sans-serif;font-size:13px;color:#6B6560;cursor:pointer;text-decoration:underline;">Se déconnecter</button>
         </form>
     </div>
+</div>
 </x-guest-layout>

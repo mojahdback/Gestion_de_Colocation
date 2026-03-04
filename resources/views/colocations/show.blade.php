@@ -2,317 +2,286 @@
 @section('title', $colocation->name)
 
 @section('content')
-<div class="space-y-6">
+<div style="display:flex;flex-direction:column;gap:24px;">
 
-{{-- Header --}}
-<div class="flex flex-wrap items-center justify-between gap-4">
-    <div>
-        <div class="flex items-center gap-3">
-            <h1 class="text-2xl font-bold text-gray-900">{{ $colocation->name }}</h1>
-            <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded-full">Active</span>
-        </div>
-        @if($colocation->address)
-            <p class="text-sm text-gray-500 mt-0.5">📍 {{ $colocation->address }}</p>
-        @endif
-    </div>
-    <a href="{{ route('dashboard') }}" class="text-sm text-gray-500 hover:text-indigo-600">← Retour</a>
-</div>
-
-{{-- Tabs-like layout: 2 columns on desktop --}}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-    {{-- LEFT: Members + Balances + Settlements --}}
-    <div class="space-y-5">
-
-        {{-- Members --}}
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="font-semibold text-gray-900">👥 Membres</h2>
-                @if(auth()->id() === $colocation->role)
-                    <button onclick="document.getElementById('invite-modal').classList.remove('hidden')"
-                            class="text-xs bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition font-medium">
-                        + Inviter
-                    </button>
-                @endif
+    <!-- Header -->
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div>
+            <a href="{{ route('dashboard') }}" style="font-size:13px;color:#6B6560;text-decoration:none;display:inline-flex;align-items:center;gap:4px;margin-bottom:10px;">← Tableau de bord</a>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                <h1 style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:#1C1C1C;">{{ $colocation->name }}</h1>
+                <span class="badge {{ $colocation->status === 'active' ? 'badge-green' : 'badge-gray' }}">{{ $colocation->status }}</span>
             </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            @if(auth()->id() === optional($colocation->owner())->id)
+            <button onclick="document.getElementById('invite-modal').style.display='flex'" class="btn-primary">+ Inviter un membre</button>
+            @endif
+            @if(auth()->id() !== optional($colocation->owner())->id)
+            <form method="POST" action="{{ route('colocations.leave', $colocation) }}" onsubmit="return confirm('Quitter cette colocation ?')">
+                @csrf
+                <button type="submit" class="btn-danger">Quitter</button>
+            </form>
+            @endif
+        </div>
+    </div>
 
-            <div class="space-y-3">
-                @foreach($members as $member)
+    <!-- Main Grid -->
+    <div style="display:grid;grid-template-columns:320px 1fr;gap:20px;align-items:start;">
+
+        <!-- LEFT COLUMN -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+
+            <!-- Members -->
+            <div class="card-elevated" style="padding:20px;">
+                <h2 style="font-size:15px;font-weight:600;color:#1C1C1C;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+                    <span>👥</span> Membres ({{ $members->count() }})
+                </h2>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    @foreach($members as $member)
                     @php $balance = $balances[$member->id] ?? 0; @endphp
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-semibold text-sm">
-                                {{ substr($member->name, 0, 1) }}
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#F5C2A0,#C4663A);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:13px;flex-shrink:0;">
+                                {{ substr($member->name,0,1) }}
                             </div>
                             <div>
-                                <p class="text-sm font-medium text-gray-800">
+                                <div style="font-size:14px;font-weight:500;color:#1C1C1C;display:flex;align-items:center;gap:5px;">
                                     {{ $member->name }}
-                                    @if($member->id === $colocation-> role)
-                                        <span class="text-xs text-indigo-500">(owner)</span>
+                                    @if($member->id === optional($colocation->owner())->id)
+                                        <span style="font-size:10px;background:#FDF0EA;color:#C4663A;padding:1px 6px;border-radius:10px;">owner</span>
                                     @endif
                                     @if($member->id === auth()->id())
-                                        <span class="text-xs text-gray-400">(moi)</span>
+                                        <span style="font-size:10px;color:#B0A89E;">(moi)</span>
                                     @endif
-                                </p>
-                                <p class="text-xs {{ $member->reputation >= 0 ? 'text-green-600' : 'text-red-500' }}">
-                                    Réputation: {{ $member->reputation >= 0 ? '+' : '' }}{{ $member->reputation }}
-                                </p>
+                                </div>
+                                <div style="font-size:12px;color:{{ $member->reputation >= 0 ? '#1E7E3E' : '#C0392B' }};">
+                                    rép. {{ $member->reputation >= 0 ? '+' : '' }}{{ $member->reputation }}
+                                </div>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <p class="text-sm font-semibold {{ $balance >= 0 ? 'text-green-600' : 'text-red-600' }}">
+                        <div style="text-align:right;">
+                            <div style="font-size:14px;font-weight:700;color:{{ $balance >= 0 ? '#1E7E3E' : '#C0392B' }};">
                                 {{ $balance >= 0 ? '+' : '' }}{{ number_format($balance, 2) }} €
-                            </p>
-                            @if(auth()->id() === $colocation->role && $member->id !== $colocation->owner)
-                                <form method="POST" action="{{ route('colocations.members.remove', [$colocation, $member]) }}"
-                                      onsubmit="return confirm('Retirer {{ $member->name }} ?')">
-                                    @csrf @method('DELETE')
-                                    <button class="text-xs text-red-400 hover:text-red-600 mt-0.5">Retirer</button>
-                                </form>
+                            </div>
+                            @if(auth()->id() === optional($colocation->owner())->id && $member->id !== optional($colocation->owner())->id)
+                            <form method="POST" action="{{ route('colocations.removeMember', [$colocation, $member]) }}" onsubmit="return confirm('Retirer {{ $member->name }} ?')">
+                                @csrf @method('DELETE')
+                                <button type="submit" style="background:none;border:none;font-size:11px;color:#C0392B;cursor:pointer;padding:0;">Retirer</button>
+                            </form>
                             @endif
                         </div>
                     </div>
-                @endforeach
-            </div>
-        </div>
-
-        {{-- Settlements --}}
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-            <h2 class="font-semibold text-gray-900 mb-4">💸 Qui doit à qui</h2>
-
-            @if(empty($settlements))
-                <p class="text-sm text-gray-400 text-center py-4">Tout le monde est quitte ! 🎉</p>
-            @else
-                <div class="space-y-3">
-                    @foreach($settlements as $s)
-                        <div class="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
-                            <div class="text-sm">
-                                <span class="font-medium text-gray-800">{{ $s['from']->name }}</span>
-                                <span class="text-gray-400 mx-1">→</span>
-                                <span class="font-medium text-gray-800">{{ $s['to']->name }}</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-sm font-bold text-red-600">{{ number_format($s['amount'], 2) }} €</span>
-                                @if($s['from']->id === auth()->id())
-                                    <form method="POST" action="{{ route('payments.store', $colocation) }}">
-                                        @csrf
-                                        <input type="hidden" name="to_user_id" value="{{ $s['to']->id }}">
-                                        <input type="hidden" name="amount" value="{{ $s['amount'] }}">
-                                        <button type="submit"
-                                                class="text-xs bg-green-100 text-green-700 px-2.5 py-1 rounded-lg hover:bg-green-200 transition font-medium">
-                                            Marquer payé ✓
-                                        </button>
-                                    </form>
-                                @endif
-                            </div>
-                        </div>
                     @endforeach
                 </div>
+            </div>
+
+            <!-- Settlements -->
+            <div class="card-elevated" style="padding:20px;">
+                <h2 style="font-size:15px;font-weight:600;color:#1C1C1C;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+                    <span>💸</span> Règlements
+                </h2>
+                @if(empty($settlements))
+                    <div style="text-align:center;padding:20px 0;">
+                        <div style="font-size:32px;margin-bottom:8px;">🎉</div>
+                        <p style="font-size:13px;color:#6B6560;">Tout le monde est quitte !</p>
+                    </div>
+                @else
+                    <div style="display:flex;flex-direction:column;gap:10px;">
+                        @foreach($settlements as $s)
+                        <div style="background:#F5F0E8;border-radius:10px;padding:12px 14px;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+                                <div style="font-size:13px;color:#1C1C1C;">
+                                    <strong>{{ $s['from'] }}</strong>
+                                    <span style="color:#B0A89E;margin:0 4px;">→</span>
+                                    <strong>{{ $s['to'] }}</strong>
+                                </div>
+                                <span style="font-size:14px;font-weight:700;color:#C0392B;">{{ number_format($s['amount'], 2) }} €</span>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+
+            <!-- Categories -->
+            <div class="card-elevated" style="padding:20px;">
+                <h2 style="font-size:15px;font-weight:600;color:#1C1C1C;margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+                    <span>🏷️</span> Catégories
+                </h2>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;">
+                    @forelse($categories as $cat)
+                    <div style="display:flex;align-items:center;gap:6px;background:#F5F0E8;border-radius:20px;padding:4px 12px;">
+                        <span style="font-size:13px;color:#1C1C1C;">{{ $cat->name }}</span>
+                        @if(auth()->id() === optional($colocation->owner())->id)
+                        <form method="POST" action="{{ route('categories.destroy', $cat) }}" style="display:inline;">
+                            @csrf @method('DELETE')
+                            <button type="submit" style="background:none;border:none;cursor:pointer;color:#B0A89E;font-size:12px;line-height:1;padding:0;margin-left:2px;" onmouseover="this.style.color='#C0392B'" onmouseout="this.style.color='#B0A89E'">×</button>
+                        </form>
+                        @endif
+                    </div>
+                    @empty
+                    <p style="font-size:13px;color:#B0A89E;">Aucune catégorie</p>
+                    @endforelse
+                </div>
+                @if(auth()->id() === optional($colocation->owner())->id)
+                <form method="POST" action="{{ route('categories.store', $colocation) }}" style="display:flex;gap:8px;">
+                    @csrf
+                    <input type="text" name="name" class="input" placeholder="Nouvelle catégorie" required style="flex:1;">
+                    <button type="submit" class="btn-primary" style="padding:10px 14px;flex-shrink:0;">+</button>
+                </form>
+                @endif
+            </div>
+
+            <!-- Danger Zone (owner) -->
+            @if(auth()->id() === optional($colocation->owner())->id)
+            <div class="card" style="padding:18px;border-color:#F5C2BA;">
+                <h3 style="font-size:13px;font-weight:600;color:#C0392B;margin-bottom:12px;">Zone dangereuse</h3>
+                <form method="POST" action="{{ route('colocations.destroy', $colocation) }}" onsubmit="return confirm('Annuler définitivement la colocation ?')">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn-danger" style="width:100%;justify-content:center;">Annuler la colocation</button>
+                </form>
+            </div>
             @endif
         </div>
 
-        {{-- Categories (owner only) --}}
-        @if(auth()->id() === $colocation->role)
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                <h2 class="font-semibold text-gray-900 mb-3">🏷️ Catégories</h2>
-                <div class="flex flex-wrap gap-2 mb-4">
-                    @foreach($categories as $cat)
-                        <div class="flex items-center gap-1.5 bg-gray-50 rounded-full px-3 py-1">
-                            <span class="w-2.5 h-2.5 rounded-full" style="background-color: {{ $cat->color }}"></span>
-                            <span class="text-xs text-gray-700">{{ $cat->name }}</span>
-                            <form method="POST" action="{{ route('categories.destroy', [$colocation, $cat]) }}">
-                                @csrf @method('DELETE')
-                                <button class="text-gray-300 hover:text-red-500 text-xs ml-0.5">✕</button>
-                            </form>
-                        </div>
-                    @endforeach
-                </div>
-                <form method="POST" action="{{ route('categories.store', $colocation) }}" class="flex gap-2">
+        <!-- RIGHT COLUMN — Expenses -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+
+            <!-- Add Expense Form -->
+            <div class="card-elevated" style="padding:24px;">
+                <h2 style="font-size:15px;font-weight:600;color:#1C1C1C;margin-bottom:18px;display:flex;align-items:center;gap:8px;">
+                    <span>➕</span> Ajouter une dépense
+                </h2>
+                <form method="POST" action="{{ route('expenses.store', $colocation) }}">
                     @csrf
-                    <input type="text" name="name" placeholder="Nouvelle catégorie" required
-                           class="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300">
-                    <input type="color" name="color" value="#6366f1"
-                           class="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer p-1">
-                    <button type="submit"
-                            class="bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-indigo-700 transition">+</button>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                        <div>
+                            <label>Titre *</label>
+                            <input type="text" name="title" class="input" placeholder="Ex: Courses Aldi" required>
+                        </div>
+                        <div>
+                            <label>Montant (€) *</label>
+                            <input type="number" name="amount" class="input" step="0.01" min="0.01" placeholder="0.00" required>
+                        </div>
+                        <div>
+                            <label>Date *</label>
+                            <input type="date" name="date" class="input" value="{{ date('Y-m-d') }}" required>
+                        </div>
+                        <div>
+                            <label>Payé par *</label>
+                            <select name="payer_id" class="input" required>
+                                @foreach($members as $m)
+                                <option value="{{ $m->id }}" {{ $m->id === auth()->id() ? 'selected' : '' }}>{{ $m->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div style="grid-column:span 2;">
+                            <label>Catégorie</label>
+                            <select name="category_id" class="input" required>
+                                <option value="">— Sans catégorie —</option>
+                                @foreach($categories as $cat)
+                                <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary" style="margin-top:16px;width:100%;justify-content:center;">
+                        Ajouter la dépense
+                    </button>
                 </form>
             </div>
-        @endif
-    </div>
 
-    {{-- RIGHT: Expenses --}}
-    <div class="lg:col-span-2 space-y-5">
-
-        {{-- Add Expense --}}
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-            <h2 class="font-semibold text-gray-900 mb-4">➕ Ajouter une dépense</h2>
-            <form method="POST" action="{{ route('expenses.store', $colocation) }}" class="space-y-3">
-                @csrf
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="text-xs font-medium text-gray-600">Titre *</label>
-                        <input type="text" name="title" required placeholder="Ex: Courses Aldi"
-                               class="mt-1 w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300">
-                    </div>
-                    <div>
-                        <label class="text-xs font-medium text-gray-600">Montant (€) *</label>
-                        <input type="number" name="amount" step="0.01" min="0.01" required placeholder="0.00"
-                               class="mt-1 w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300">
-                    </div>
-                    <div>
-                        <label class="text-xs font-medium text-gray-600">Date *</label>
-                        <input type="date" name="expense_date" required value="{{ date('Y-m-d') }}"
-                               class="mt-1 w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300">
-                    </div>
-                    <div>
-                        <label class="text-xs font-medium text-gray-600">Payé par *</label>
-                        <select name="paid_by" required
-                                class="mt-1 w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300">
-                            @foreach($members as $m)
-                                <option value="{{ $m->id }}" {{ $m->id === auth()->id() ? 'selected' : '' }}>
-                                    {{ $m->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-xs font-medium text-gray-600">Catégorie</label>
-                        <select name="category_id"
-                                class="mt-1 w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300">
-                            <option value="">— Sans catégorie —</option>
-                            @foreach($categories as $cat)
-                                <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-xs font-medium text-gray-600">Notes</label>
-                        <input type="text" name="notes" placeholder="Optionnel"
-                               class="mt-1 w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300">
-                    </div>
-                </div>
-                <button type="submit"
-                        class="w-full bg-indigo-600 text-white py-2.5 rounded-xl font-medium hover:bg-indigo-700 transition text-sm">
-                    Ajouter la dépense
-                </button>
-            </form>
-        </div>
-
-        {{-- Expense list --}}
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-                <h2 class="font-semibold text-gray-900">📋 Dépenses</h2>
-
-                {{-- Month filter --}}
-                <form method="GET" action="{{ route('colocations.show', $colocation) }}" class="flex items-center gap-2">
-                    <select name="month" onchange="this.form.submit()"
-                            class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300">
-                        <option value="">Tous les mois</option>
-                        @foreach($months as $m)
+            <!-- Expense List -->
+            <div class="card-elevated" style="padding:24px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
+                    <h2 style="font-size:15px;font-weight:600;color:#1C1C1C;display:flex;align-items:center;gap:8px;">
+                        <span>📋</span> Dépenses
+                    </h2>
+                    <!-- Month filter -->
+                    <form method="GET" action="{{ route('colocations.show', $colocation) }}">
+                        <select name="month" onchange="this.form.submit()" style="border:1px solid #E5DDD0;border-radius:8px;padding:6px 12px;font-size:13px;color:#1C1C1C;background:white;cursor:pointer;outline:none;">
+                            <option value="">Tous les mois</option>
+                            @foreach($months as $m)
                             <option value="{{ $m }}" {{ $month === $m ? 'selected' : '' }}>
                                 {{ \Carbon\Carbon::createFromFormat('Y-m', $m)->translatedFormat('F Y') }}
                             </option>
-                        @endforeach
-                    </select>
-                </form>
-            </div>
+                            @endforeach
+                        </select>
+                    </form>
+                </div>
 
-            @if($expenses->isEmpty())
-                <p class="text-center text-gray-400 text-sm py-8">Aucune dépense pour cette période.</p>
-            @else
-                <div class="space-y-2">
+                @if($expenses->isEmpty())
+                <div style="text-align:center;padding:40px 0;">
+                    <div style="font-size:40px;margin-bottom:12px;">💰</div>
+                    <p style="font-size:14px;color:#B0A89E;">Aucune dépense pour cette période.</p>
+                </div>
+                @else
+                <div style="display:flex;flex-direction:column;gap:8px;">
                     @foreach($expenses as $expense)
-                        <div class="flex items-start justify-between bg-gray-50 rounded-xl px-4 py-3 hover:bg-gray-100 transition">
-                            <div class="flex items-start gap-3">
-                                <div class="mt-0.5">
-                                    @if($expense->category)
-                                        <span class="inline-block w-3 h-3 rounded-full" style="background-color: {{ $expense->category->color }}"></span>
-                                    @else
-                                        <span class="inline-block w-3 h-3 rounded-full bg-gray-300"></span>
-                                    @endif
-                                </div>
-                                <div>
-                                    <p class="text-sm font-medium text-gray-800">{{ $expense->title }}</p>
-                                    <p class="text-xs text-gray-500 mt-0.5">
-                                        {{ $expense->paidBy->name }} •
-                                        {{ $expense->expense_date->format('d/m/Y') }}
-                                        @if($expense->category)
-                                            • <span style="color: {{ $expense->category->color }}">{{ $expense->category->name }}</span>
-                                        @endif
-                                    </p>
-                                    @if($expense->notes)
-                                        <p class="text-xs text-gray-400 mt-0.5 italic">{{ $expense->notes }}</p>
-                                    @endif
-                                </div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px;background:#F5F0E8;border-radius:10px;transition:background 0.2s;"
+                         onmouseover="this.style.background='#EDE5DA'" onmouseout="this.style.background='#F5F0E8'">
+                        <div style="display:flex;align-items:center;gap:12px;min-width:0;">
+                            <div style="width:36px;height:36px;background:white;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;border:1px solid #E5DDD0;">
+                                {{ $expense->category ? '🏷️' : '💳' }}
                             </div>
-                            <div class="flex items-center gap-3">
-                                <span class="text-sm font-bold text-gray-900">{{ number_format($expense->amount, 2) }} €</span>
-                                @if($expense->paid_by === auth()->id() || auth()->id() === $colocation->owner_id)
-                                    <form method="POST" action="{{ route('expenses.destroy', [$colocation, $expense]) }}"
-                                          onsubmit="return confirm('Supprimer cette dépense ?')">
-                                        @csrf @method('DELETE')
-                                        <button class="text-gray-300 hover:text-red-500 transition text-sm">🗑</button>
-                                    </form>
-                                @endif
+                            <div style="min-width:0;">
+                                <p style="font-size:14px;font-weight:500;color:#1C1C1C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $expense->title }}</p>
+                                <p style="font-size:12px;color:#6B6560;margin-top:1px;">
+                                    {{ optional($expense->payer)->name }} •
+                                    {{ \Carbon\Carbon::parse($expense->date)->format('d/m/Y') }}
+                                    @if($expense->category) • {{ $expense->category->name }} @endif
+                                </p>
                             </div>
                         </div>
+                        <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
+                            <span style="font-size:15px;font-weight:700;color:#1C1C1C;">{{ number_format($expense->amount, 2) }} €</span>
+                            @if($expense->payer_id === auth()->id() || auth()->id() === optional($colocation->owner())->id)
+                            <form method="POST" action="{{ route('expenses.destroy', $expense) }}" onsubmit="return confirm('Supprimer ?')">
+                                @csrf @method('DELETE')
+                                <button type="submit" style="background:none;border:none;cursor:pointer;color:#D4C5B5;font-size:16px;transition:color 0.2s;"
+                                        onmouseover="this.style.color='#C0392B'" onmouseout="this.style.color='#D4C5B5'">🗑</button>
+                            </form>
+                            @endif
+                        </div>
+                    </div>
                     @endforeach
                 </div>
-
-                {{-- Total for filtered period --}}
-                <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between text-sm">
-                    <span class="text-gray-500">Total {{ $month ? 'ce mois' : 'toutes périodes' }}</span>
-                    <span class="font-bold text-gray-900">{{ number_format($expenses->sum('amount'), 2) }} €</span>
+                <!-- Total -->
+                <div style="margin-top:16px;padding-top:16px;border-top:1px solid #E5DDD0;display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:14px;color:#6B6560;">Total {{ $month ? 'ce mois' : '(toutes périodes)' }}</span>
+                    <span style="font-size:17px;font-weight:700;color:#1C1C1C;">{{ number_format($expenses->sum('amount'), 2) }} €</span>
                 </div>
-            @endif
+                @endif
+            </div>
+
         </div>
     </div>
-</div>
 
 </div>
 
-{{-- Invite Modal --}}
-@if(auth()->id() === $colocation->role)
-<div id="invite-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold text-gray-900">Inviter un membre</h3>
-            <button onclick="document.getElementById('invite-modal').classList.add('hidden')"
-                    class="text-gray-400 hover:text-gray-600">✕</button>
+<!-- Invite Modal -->
+<div id="invite-modal" style="display:none;position:fixed;inset:0;background:rgba(28,28,28,0.5);z-index:100;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:white;border-radius:16px;padding:28px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(28,28,28,0.2);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+            <h3 style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#1C1C1C;">Inviter un membre</h3>
+            <button onclick="document.getElementById('invite-modal').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:20px;color:#B0A89E;line-height:1;">×</button>
         </div>
-        <form method="POST" action="{{ route('invitations.store', $colocation) }}">
+        <form method="POST" action="{{ route('invitations.store', $colocation) }}" style="display:flex;flex-direction:column;gap:14px;">
             @csrf
-            <label class="text-sm font-medium text-gray-700">Adresse email</label>
-            <input type="email" name="email" required placeholder="prenom@email.com"
-                   class="mt-1.5 w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
-            <div class="flex gap-3 mt-4">
-                <button type="button"
-                        onclick="document.getElementById('invite-modal').classList.add('hidden')"
-                        class="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50 transition">
+            <div>
+                <label>Adresse email *</label>
+                <input type="email" name="email" class="input" placeholder="prenom@email.com" required>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:4px;">
+                <button type="button" onclick="document.getElementById('invite-modal').style.display='none'"
+                        style="flex:1;border:1px solid #E5DDD0;background:transparent;border-radius:8px;padding:11px;font-family:'DM Sans',sans-serif;font-size:14px;color:#6B6560;cursor:pointer;">
                     Annuler
                 </button>
-                <button type="submit"
-                        class="flex-1 bg-indigo-600 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-indigo-700 transition">
-                    Envoyer l'invitation
-                </button>
+                <button type="submit" class="btn-primary" style="flex:1;justify-content:center;">Envoyer</button>
             </div>
         </form>
-
-        {{-- Pending invitations list --}}
-        @php $pendingInvitations = $colocation->invitations()->where('status', 'pending')->get(); @endphp
-        @if($pendingInvitations->count())
-            <div class="mt-4 pt-4 border-t border-gray-100">
-                <p class="text-xs font-medium text-gray-500 mb-2">Invitations en attente</p>
-                @foreach($pendingInvitations as $inv)
-                    <div class="flex justify-between text-xs text-gray-600 py-1">
-                        <span>{{ $inv->email }}</span>
-                        <span class="text-gray-400">Expire {{ $inv->expires_at?->diffForHumans() }}</span>
-                    </div>
-                @endforeach
-            </div>
-        @endif
     </div>
 </div>
-@endif
-
 @endsection

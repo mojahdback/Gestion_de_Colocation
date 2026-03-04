@@ -2,53 +2,46 @@
 @section('title', 'Invitation')
 
 @section('content')
-<div class="max-w-md mx-auto">
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
-        <div class="text-5xl mb-4">📬</div>
-        <h1 class="text-2xl font-bold text-gray-900">Invitation à rejoindre</h1>
-        <p class="text-xl font-semibold text-indigo-600 mt-1">{{ $invitation->colocation->name }}</p>
+<div style="max-width:480px;margin:40px auto;">
+    <div class="card-elevated" style="padding:40px;text-align:center;">
+        <div style="font-size:60px;margin-bottom:20px;">📬</div>
+        <h1 style="font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:#1C1C1C;margin-bottom:6px;">Invitation</h1>
+        <p style="font-size:16px;color:#C4663A;font-weight:600;margin-bottom:24px;">{{ $invitation->colocation->name }}</p>
 
-        @if(!$invitation->isPending())
-            <div class="mt-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
-                Cette invitation n'est plus valide
-                ({{ $invitation->status === 'accepted' ? 'déjà acceptée' : ($invitation->status === 'refused' ? 'refusée' : 'expirée') }}).
-            </div>
-            <a href="{{ route('dashboard') }}" class="inline-block mt-4 text-indigo-600 text-sm hover:underline">
-                Retour au dashboard
-            </a>
+        @if($invitation->status !== 'pending')
+        <div style="background:#FFF0EE;border:1px solid #F5C2BA;color:#C0392B;padding:14px 18px;border-radius:10px;font-size:14px;margin-bottom:16px;">
+            Cette invitation n'est plus valide
+            ({{ $invitation->status === 'accepted' ? 'déjà acceptée' : 'refusée' }}).
+        </div>
+        <a href="{{ route('dashboard') }}" class="btn-primary" style="text-decoration:none;display:inline-flex;">Retour au dashboard</a>
+
         @elseif(auth()->user()->email !== $invitation->email)
-            <div class="mt-6 bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-xl text-sm">
-                ⚠️ Cette invitation est destinée à <strong>{{ $invitation->email }}</strong>.
-                Vous êtes connecté(e) avec <strong>{{ auth()->user()->email }}</strong>.
-            </div>
-        @elseif(auth()->user()->hasActiveColocation())
-            <div class="mt-6 bg-orange-50 border border-orange-200 text-orange-800 px-4 py-3 rounded-xl text-sm">
-                ⚠️ Vous faites déjà partie d'une colocation active. Vous devez la quitter avant d'en rejoindre une nouvelle.
-            </div>
-        @else
-            <p class="text-gray-500 mt-3 text-sm">
-                Invitation pour <strong>{{ $invitation->email }}</strong>.
-                @if($invitation->expires_at)
-                    Expire {{ $invitation->expires_at->diffForHumans() }}.
-                @endif
-            </p>
+        <div style="background:#FFFBEB;border:1px solid #FDE68A;color:#92400E;padding:14px 18px;border-radius:10px;font-size:14px;margin-bottom:16px;">
+            ⚠️ Cette invitation est pour <strong>{{ $invitation->email }}</strong>.<br>
+            Vous êtes connecté(e) avec <strong>{{ auth()->user()->email }}</strong>.
+        </div>
 
-            <div class="flex gap-3 mt-8">
-                <form method="POST" action="{{ route('invitations.refuse', $invitation->token) }}" class="flex-1">
-                    @csrf
-                    <button type="submit"
-                            class="w-full border border-gray-200 text-gray-600 py-3 rounded-xl text-sm font-medium hover:bg-gray-50 transition">
-                        Refuser
-                    </button>
-                </form>
-                <form method="POST" action="{{ route('invitations.accept', $invitation->token) }}" class="flex-1">
-                    @csrf
-                    <button type="submit"
-                            class="w-full bg-indigo-600 text-white py-3 rounded-xl text-sm font-medium hover:bg-indigo-700 transition shadow-sm">
-                        Accepter 🎉
-                    </button>
-                </form>
-            </div>
+        @elseif(auth()->user()->hasActiveColocation())
+        <div style="background:#FFF3E0;border:1px solid #FFCC80;color:#E65100;padding:14px 18px;border-radius:10px;font-size:14px;margin-bottom:16px;">
+            ⚠️ Vous faites déjà partie d'une colocation active.
+        </div>
+
+        @else
+        <p style="font-size:14px;color:#6B6560;margin-bottom:28px;">
+            Invitation pour <strong>{{ $invitation->email }}</strong>.
+        </p>
+        <div style="display:flex;gap:12px;">
+            <form method="POST" action="{{ route('invitations.refuse', $invitation->token) }}" style="flex:1;">
+                @csrf
+                <button type="submit" style="width:100%;border:1px solid #E5DDD0;background:transparent;border-radius:8px;padding:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:#6B6560;cursor:pointer;">
+                    Refuser
+                </button>
+            </form>
+            <form method="POST" action="{{ route('invitations.accept', $invitation->token) }}" style="flex:1;">
+                @csrf
+                <button type="submit" class="btn-primary" style="width:100%;justify-content:center;">Accepter 🎉</button>
+            </form>
+        </div>
         @endif
     </div>
 </div>

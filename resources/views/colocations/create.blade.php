@@ -2,48 +2,27 @@
 @section('title', 'Créer une colocation')
 
 @section('content')
-<div class="max-w-xl mx-auto">
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-        <h1 class="text-2xl font-bold text-gray-900 mb-6">🏡 Créer une colocation</h1>
+<div style="max-width:560px;margin:0 auto;">
+    <div style="margin-bottom:24px;">
+        <a href="{{ route('dashboard') }}" style="font-size:13px;color:#6B6560;text-decoration:none;display:inline-flex;align-items:center;gap:5px;margin-bottom:16px;">← Retour</a>
+        <h1 style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:#1C1C1C;margin-bottom:6px;">Créer une colocation 🏡</h1>
+        <p style="font-size:14px;color:#6B6560;">Vous serez automatiquement désigné(e) propriétaire.</p>
+    </div>
 
-        <form method="POST" action="{{ route('colocations.store') }}" class="space-y-5">
+    <div class="card-elevated" style="padding:32px;">
+        <form method="POST" action="{{ route('colocations.store') }}" style="display:flex;flex-direction:column;gap:20px;">
             @csrf
-
             <div>
-                <label for="name" class="text-sm font-medium text-gray-700">Nom de la colocation *</label>
-                <input type="text" id="name" name="name" required maxlength="255"
-                       value="{{ old('name') }}"
-                       placeholder="Ex: Appart 3 rue des Lilas"
-                       class="mt-1.5 w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 @error('name') border-red-400 @enderror">
-                @error('name')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                @enderror
+                <label for="name">Nom de la colocation *</label>
+                <input type="text" id="name" name="name" class="input" placeholder="Ex : Appart 3 rue des Lilas" value="{{ old('name') }}" required maxlength="255">
+                @error('name') <p style="font-size:12px;color:#C0392B;margin-top:4px;">{{ $message }}</p> @enderror
             </div>
-
-            <div>
-                <label for="address" class="text-sm font-medium text-gray-700">Adresse</label>
-                <input type="text" id="address" name="address" maxlength="500"
-                       value="{{ old('address') }}"
-                       placeholder="Ex: 3 rue des Lilas, 75011 Paris"
-                       class="mt-1.5 w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
-            </div>
-
-            <div>
-                <label for="description" class="text-sm font-medium text-gray-700">Description</label>
-                <textarea id="description" name="description" rows="3" maxlength="1000"
-                          placeholder="Quelques mots sur votre colocation..."
-                          class="mt-1.5 w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none">{{ old('description') }}</textarea>
-            </div>
-
-            <div class="flex gap-3 pt-2">
-                <a href="{{ route('dashboard') }}"
-                   class="flex-1 text-center border border-gray-200 text-gray-600 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50 transition">
+            <div style="display:flex;gap:12px;margin-top:8px;">
+                <a href="{{ route('dashboard') }}" style="flex:1;text-align:center;border:1px solid #E5DDD0;color:#1C1C1C;border-radius:8px;padding:11px 16px;font-size:14px;font-weight:500;text-decoration:none;transition:background 0.2s;display:block;"
+                   onmouseover="this.style.background='#F5F0E8'" onmouseout="this.style.background='transparent'">
                     Annuler
                 </a>
-                <button type="submit"
-                        class="flex-1 bg-indigo-600 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-indigo-700 transition shadow-sm">
-                    Créer la colocation
-                </button>
+                <button type="submit" class="btn-primary" style="flex:1;justify-content:center;">Créer</button>
             </div>
         </form>
     </div>
