@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreInvitationRequest;
 use Illuminate\Http\Request;
 use App\Models\Invitation;
 use App\Models\Colocation;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\InvitationMail;
 
 class InvitationController extends Controller
 {
-    public function store(Request $request, Colocation $colocation)
+    public function store(StoreInvitationRequest $request, Colocation $colocation)
     {
         $user = auth()->user();
 
@@ -19,20 +22,19 @@ class InvitationController extends Controller
         }
 
         // validation
-        $request->validate([
-            'email' => 'required|email'
-        ]);
+        $request->validated();
 
         // generate token
         $token = Str::random(32);
 
-        Invitation::create([
+        $invitation = Invitation::create([
             'email' => $request->email,
             'token' => $token,
             'colocation_id' => $colocation->id
         ]);
 
         // (optionnel) send email
+        Mail::to($request->email)->send(new InvitationMail($invitation));
 
         return back()->with('success', 'Invitation sent');
     }
@@ -53,9 +55,7 @@ class InvitationController extends Controller
         $invitation = Invitation::where('token', $token)->firstOrFail();
 
         // check status
-        if ($invitation->status !== 'pending') {
-            return redirect('/dashboard')->withErrors('Invalid invitation');
-        }
+       
 
         // check email
         if ($invitation->email !== $user->email) {
@@ -75,7 +75,7 @@ class InvitationController extends Controller
 
         // update invitation
         $invitation->update([
-            'status' => 'accepted'
+            'status' => 'aceppted'
         ]);
 
         return redirect()->route('colocations.show', $invitation->colocation);

@@ -14,7 +14,7 @@ class AdminController extends Controller
     {
         $this->middleware(function ($request, $next) {
             if (! Auth::user()?->is_admin) {
-                abort(403, 'Accès réservé aux administrateurs.');
+                abort(403, 'Acces reserve aux administrateurs.');
             }
             return $next($request);
         });

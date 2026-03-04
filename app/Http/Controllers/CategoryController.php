@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreCategoryRequest;
 use Illuminate\Http\Request;
 use App\Models\Colocation;
 use App\Models\Category;
@@ -14,11 +15,12 @@ class CategoryController extends Controller
         return view('categories.index', compact('colocation','categories'));
     }
 
-    public function store(Request $request, Colocation $colocation)
+    public function store(StoreCategoryRequest $request, Colocation $colocation)
     {
-    $request->validate([
-        'name' => 'required|string|max:255'
-    ]);
+        
+    $request->validated();
+        
+    
 
     Category::create([
         'name' => $request->name,

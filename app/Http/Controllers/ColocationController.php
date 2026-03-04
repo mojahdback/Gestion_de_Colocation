@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreColocationRequest;
 use App\Models\Colocation;
 use App\Models\Membership;
 use Illuminate\Http\Request;
@@ -30,11 +31,9 @@ class ColocationController extends Controller
     /**
      * Store new colocation
      */
-    public function store(Request $request)
+    public function store(StoreColocationRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255'
-        ]);
+        $request->validated();
 
         $user = Auth::user();
 
@@ -238,4 +237,13 @@ class ColocationController extends Controller
 
         return redirect('/')->with('success', 'Colocation cancelled');
     }
+
+    public function destroy(Colocation $colocation)
+{
+    $colocation->delete();
+
+    return redirect()->route('dashboard')
+        ->with('success', 'Colocation supprimée');
+}
+
 }

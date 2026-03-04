@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreExpenseRequest;
 use Illuminate\Http\Request;
 use App\Models\Colocation;
 use App\Models\Category;
@@ -27,15 +28,9 @@ class ExpenseController extends Controller
     return view('expenses.create', compact('colocation', 'categories', 'members'));
     }
 
-    public function store(Request $request, Colocation $colocation)
+    public function store(StoreExpenseRequest $request, Colocation $colocation)
     {
-    $request->validate([
-        'title' => 'required|string|max:255',
-        'amount' => 'required|numeric|min:0',
-        'date' => 'required|date',
-        'payer_id' => 'required|exists:users,id',
-        'category_id' => 'required|exists:categories,id',
-    ]);
+    $request->validated();
 
     Expense::create([
         'title' => $request->title,
